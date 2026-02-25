@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Menu, X } from "lucide-react";
+// import { Menu, X } from "lucide-react";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -72,13 +72,13 @@ export default function Navbar() {
 
       <div className="burger md:hidden cursor-pointer" onClick={toggleMenu}>
         <div
-          className={`w-6 h-0.5 bg-[#f84258] mb-1 transition-all duration-300 ${isOpen ? "rotate-[-45deg] translate-y-2" : ""}`}
+          className={`w-6 h-0.5 bg-[#f84258] mb-1 transition-all duration-300 ${isOpen ? "-rotate-45 translate-y-2" : ""}`}
         ></div>
         <div
           className={`w-6 h-0.5 bg-[#f84258] mb-1 transition-all duration-300 ${isOpen ? "opacity-0" : ""}`}
         ></div>
         <div
-          className={`w-6 h-0.5 bg-[#f84258] transition-all duration-300 ${isOpen ? "rotate-[45deg] -translate-y-2" : ""}`}
+          className={`w-6 h-0.5 bg-[#f84258] transition-all duration-300 ${isOpen ? "rotate-45 -translate-y-2" : ""}`}
         ></div>
       </div>
     </nav>

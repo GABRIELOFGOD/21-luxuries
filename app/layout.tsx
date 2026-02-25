@@ -9,9 +9,6 @@ import {
   Sacramento,
 } from "next/font/google";
 import "./globals.css";
-import Navbar from "./components/Navbar";
-import Footer from "./components/Footer";
-import Link from "next/link";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -72,15 +69,7 @@ export default function RootLayout({
       className={`${montserrat.variable} ${lora.variable} ${chivo.variable} ${playfair.variable} ${bethEllen.variable} ${novaCut.variable} ${sacramento.variable}`}
     >
       <body className="font-montserrat">
-        <Navbar />
-        <main className="pt-[10vh]">{children}</main>
-        <Footer />
-        <p className="text-center text-[#f84258] font-sacramento text-2xl py-4">
-          <Link href="/" className="text-[#f84258] no-underline">
-            Shivani
-          </Link>
-          &copy;2019
-        </p>
+        {children}
       </body>
     </html>
   );

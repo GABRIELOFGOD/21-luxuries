@@ -238,7 +238,7 @@ export default function ProductsPage() {
         <br />
 
         <small className="text-black block mt-4">
-          Can't see anything? Click & add your favorite fashion in
+          Can&apos;t see anything? Click & add your favorite fashion in
           <span className="text-[#f84258]"> Shopping List!</span>
         </small>
       </div>
