@@ -9,6 +9,8 @@ import {
   Sacramento,
 } from "next/font/google";
 import "./globals.css";
+import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -54,8 +56,8 @@ const sacramento = Sacramento({
 });
 
 export const metadata: Metadata = {
-  title: "Merlin Fashion",
-  description: "Men's fashion e-commerce website",
+  title: "21 Luxuries",
+  description: "Streetwear with a luxury mindset",
 };
 
 export default function RootLayout({
@@ -69,7 +71,15 @@ export default function RootLayout({
       className={`${montserrat.variable} ${lora.variable} ${chivo.variable} ${playfair.variable} ${bethEllen.variable} ${novaCut.variable} ${sacramento.variable}`}
     >
       <body className="font-montserrat">
-        {children}
+        <Navbar />
+        <main className="pt-[10vh]">{children}</main>
+        <Footer />
+        <p className="text-center text-primary font-sacramento text-2xl py-4">
+          <a href="/" className="text-primary no-underline">
+            21 Luxuries
+          </a>
+          &copy;2026
+        </p>
       </body>
     </html>
   );

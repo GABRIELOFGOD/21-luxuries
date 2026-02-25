@@ -86,13 +86,13 @@ export default function Home() {
             height={300}
           />
         </Link>
-        <div className="text-center bg-[#f84258] text-white h-12 flex items-center justify-center text-sm md:text-base">
+        <div className="text-center bg-primary text-background h-12 flex items-center justify-center text-sm md:text-base">
           For the Young, Wild & Stylish
         </div>
-        <div className="text-center bg-[#f84258] text-white h-12 flex items-center justify-center text-sm md:text-base">
+        <div className="text-center bg-primary text-background h-12 flex items-center justify-center text-sm md:text-base">
           Just like your way to Conquer
         </div>
-        <div className="text-center bg-[#f84258] text-white h-12 flex items-center justify-center text-sm md:text-base">
+        <div className="text-center bg-primary text-background h-12 flex items-center justify-center text-sm md:text-base">
           Stands out like the Sun
         </div>
       </div>
@@ -101,10 +101,10 @@ export default function Home() {
       <br />
       <br />
 
-      <h2 className="text-center text-black text-2xl md:text-3xl font-bold pl-5 md:pl-16">
+      <h2 className="text-center text-foreground text-2xl md:text-3xl font-bold pl-5 md:pl-16">
         TRENDING NOW
       </h2>
-      <p className="text-center text-black text-lg pl-5 md:pl-16">
+      <p className="text-center text-foreground text-lg pl-5 md:pl-16">
         From the runway to your wardrobe
       </p>
 
@@ -164,10 +164,10 @@ export default function Home() {
         </Link>
       </div>
 
-      <h2 className="text-center text-black text-2xl md:text-3xl font-bold pl-5 md:pl-16 mt-16">
+      <h2 className="text-center text-foreground text-2xl md:text-3xl font-bold pl-5 md:pl-16 mt-16">
         STYLES TO STEAL
       </h2>
-      <p className="text-center text-black text-lg pl-5 md:pl-16">
+      <p className="text-center text-foreground text-lg pl-5 md:pl-16">
         Inspired by influencer
       </p>
 
