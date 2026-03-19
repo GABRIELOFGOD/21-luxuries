@@ -65,6 +65,14 @@ export default function Navbar() {
         </li>
         <li className="opacity-0 md:opacity-100">
           <Link
+            href="/dashboard"
+            className="text-foreground hover:text-primary no-underline block py-4 px-6 transition-colors"
+          >
+            Dashboard
+          </Link>
+        </li>
+        <li className="opacity-0 md:opacity-100">
+          <Link
             href="/login"
             className="text-primary hover:text-primary no-underline block py-4 px-6 transition-colors"
             id="login"
