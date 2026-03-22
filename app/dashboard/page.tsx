@@ -6,12 +6,13 @@ import { motion } from 'framer-motion';
 // import CategoryModal from '../components/CategoryModal';
 
 interface Product {
-  id: string;
+  _id: string;
   name: string;
   price: number;
   category: string;
-  image?: string;
+  images?: string[];
   stock?: number;
+  isActive?: boolean;
 }
 
 export default function DashboardPage() {
@@ -27,10 +28,10 @@ export default function DashboardPage() {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/dashboard/products');
+      const response = await fetch('/api/dashboard/products?limit=100');
       if (!response.ok) throw new Error('Failed to fetch products');
       const data = await response.json();
-      setProducts(data);
+      setProducts(data.products || data);
     } catch (error) {
       console.error('Error fetching products:', error);
     } finally {
@@ -46,7 +47,7 @@ export default function DashboardPage() {
         method: 'DELETE',
       });
       if (!response.ok) throw new Error('Failed to delete product');
-      setProducts(products.filter(p => p.id !== id));
+      setProducts(products.filter(p => p._id !== id));
     } catch (error) {
       console.error('Error deleting product:', error);
     }
@@ -134,7 +135,7 @@ export default function DashboardPage() {
               <tbody>
                 {filteredProducts.map((product, index) => (
                   <motion.tr
-                    key={product.id}
+                    key={product._id}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.05 }}
@@ -149,13 +150,13 @@ export default function DashboardPage() {
                     <td className="px-6 py-4 text-sm font-semibold text-primary">${product.price}</td>
                     <td className="px-6 py-4 text-sm text-gray-600">{product.stock || 0}</td>
                     <td className="px-6 py-4 text-sm space-x-2">
-                      <Link href={`/dashboard/edit/${product.id}`}>
+                      <Link href={`/dashboard/edit/${product._id}`}>
                         <button className="text-blue-600 hover:text-blue-800 font-semibold transition-colors">
                           Edit
                         </button>
                       </Link>
                       <button
-                        onClick={() => handleDeleteProduct(product.id)}
+                        onClick={() => handleDeleteProduct(product._id)}
                         className="text-red-600 hover:text-red-800 font-semibold transition-colors"
                       >
                         Delete

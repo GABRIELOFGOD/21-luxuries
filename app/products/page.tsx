@@ -7,10 +7,10 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 
 interface Product {
-  id: number;
+  _id: string;
   name: string;
   price: number;
-  image: string;
+  images: string[];
   category: string;
   description: string;
 }
@@ -30,14 +30,14 @@ export default function Products() {
     try {
       setLoading(true);
       const url = category
-        ? `/api/products?category=${category}`
-        : "/api/products";
+        ? `/api/products?category=${category}&limit=100`
+        : "/api/products?limit=100";
 
       const response = await fetch(url);
       if (!response.ok) throw new Error("Failed to fetch products");
 
       const data = await response.json();
-      setProducts(data);
+      setProducts(data.products || data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
@@ -90,16 +90,16 @@ export default function Products() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 px-6 md:px-12 mb-16">
         {products.map((product, index) => (
           <motion.div
-            key={product.id}
+            key={product._id}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: index * 0.1 }}
             className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300"
           >
-            <Link href={`/products/${product.id}`}>
+            <Link href={`/products/${product._id}`}>
               <div className="relative h-64 overflow-hidden">
                 <Image
-                  src={product.image}
+                  src={product.images?.[0] || '/placeholder.jpg'}
                   alt={product.name}
                   fill
                   className="object-cover hover:scale-105 transition-transform duration-300"

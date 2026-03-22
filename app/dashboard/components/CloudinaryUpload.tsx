@@ -5,59 +5,21 @@ import Image from 'next/image';
 import { motion } from 'framer-motion';
 
 interface CloudinaryUploadProps {
-  images: string[];
-  setImages: (images: string[]) => void;
+  files: File[];
+  setFiles: (files: File[]) => void;
 }
 
-export default function CloudinaryUpload({ images, setImages }: CloudinaryUploadProps) {
-  const [uploading, setUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
+export default function CloudinaryUpload({ files, setFiles }: CloudinaryUploadProps) {
   const [error, setError] = useState('');
   const [dragActive, setDragActive] = useState(false);
-
-  const uploadToCloudinary = async (files: File[]) => {
-    setError('');
-    setUploading(true);
-
-    try {
-      const uploadedUrls: string[] = [];
-      const totalFiles = files.length;
-
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('upload_preset', process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || '');
-
-        const response = await fetch(
-          `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
-          {
-            method: 'POST',
-            body: formData,
-          }
-        );
-
-        if (!response.ok) throw new Error('Upload failed');
-
-        const data = await response.json();
-        uploadedUrls.push(data.secure_url);
-
-        // Update progress
-        setUploadProgress(Math.round(((i + 1) / totalFiles) * 100));
-      }
-
-      setImages([...images, ...uploadedUrls]);
-      setUploadProgress(0);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Upload failed');
-    } finally {
-      setUploading(false);
-    }
-  };
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      uploadToCloudinary(Array.from(e.target.files));
+      const newFiles = Array.from(e.target.files);
+      setFiles([...files, ...newFiles]);
+      setError('');
     }
   };
 
@@ -75,12 +37,14 @@ export default function CloudinaryUpload({ images, setImages }: CloudinaryUpload
     e.preventDefault();
     setDragActive(false);
     if (e.dataTransfer.files) {
-      uploadToCloudinary(Array.from(e.dataTransfer.files));
+      const newFiles = Array.from(e.dataTransfer.files);
+      setFiles([...files, ...newFiles]);
+      setError('');
     }
   };
 
   const removeImage = (index: number) => {
-    setImages(images.filter((_, i) => i !== index));
+    setFiles(files.filter((_, i) => i !== index));
   };
 
   return (
@@ -144,14 +108,14 @@ export default function CloudinaryUpload({ images, setImages }: CloudinaryUpload
         </motion.div>
       )}
 
-      {/* Image Preview Grid */}
-      {images.length > 0 && (
+      {/* File Preview Grid */}
+      {files.length > 0 && (
         <div>
           <h3 className="text-lg font-bold text-primary mb-4">
-            Uploaded Images ({images.length})
+            Selected Files ({files.length})
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {images.map((image, index) => (
+            {files.map((file, index) => (
               <motion.div
                 key={index}
                 initial={{ opacity: 0, scale: 0.9 }}
@@ -161,8 +125,8 @@ export default function CloudinaryUpload({ images, setImages }: CloudinaryUpload
               >
                 <div className="relative w-full aspect-square rounded-lg overflow-hidden bg-gray-100">
                   <Image
-                    src={image}
-                    alt={`Product ${index + 1}`}
+                    src={URL.createObjectURL(file)}
+                    alt={`Preview ${index + 1}`}
                     fill
                     className="object-cover"
                   />
@@ -175,6 +139,7 @@ export default function CloudinaryUpload({ images, setImages }: CloudinaryUpload
                 >
                   ✕
                 </motion.button>
+                <p className="text-xs text-gray-500 mt-1 truncate">{file.name}</p>
               </motion.div>
             ))}
           </div>

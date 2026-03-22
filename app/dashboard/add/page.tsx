@@ -4,6 +4,7 @@ import { ChangeEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import CloudinaryUpload from '../components/CloudinaryUpload';
+import cloudinary from '@/app/lib/cloudinary';
 
 interface ProductFormData {
   name: string;
@@ -22,7 +23,7 @@ export default function AddProductPage() {
     description: '',
     stock: '',
   });
-  const [images, setImages] = useState<string[]>([]);
+  const [files, setFiles] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [categories, setCategories] = useState<string[]>([]);
@@ -44,7 +45,7 @@ export default function AddProductPage() {
     e.preventDefault();
     setError('');
 
-    if (!images.length) {
+    if (!files.length) {
       setError('Please upload at least one image');
       return;
     }
@@ -52,6 +53,32 @@ export default function AddProductPage() {
     setIsSubmitting(true);
 
     try {
+      // Upload images to Cloudinary
+      const uploadedUrls: string[] = [];
+      for (const file of files) {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('upload_preset', process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || '');
+
+        // const response = await fetch(
+        //   `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
+        //   {
+        //     method: 'POST',
+        //     body: formData,
+        //   }
+        // );
+
+        const response = await cloudinary.uploader.upload(file.toString(), {
+          upload_preset: process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || '',
+        });
+
+        if (!response.ok) throw new Error('Image upload failed');
+
+        const data = await response.json();
+        uploadedUrls.push(data.secure_url);
+      }
+
+      // Save product to database
       const response = await fetch('/api/dashboard/products', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -59,7 +86,7 @@ export default function AddProductPage() {
           ...formData,
           price: parseFloat(formData.price),
           stock: parseInt(formData.stock),
-          images,
+          images: uploadedUrls,
         }),
       });
 
@@ -198,8 +225,8 @@ export default function AddProductPage() {
               <span>🖼️</span> Product Images
             </h2>
             <CloudinaryUpload
-              images={images}
-              setImages={setImages}
+              files={files}
+              setFiles={setFiles}
             />
           </div>
 
