@@ -1,36 +1,49 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-// Mock database - in production, connect to MongoDB
-let categories = [
-  { id: '1', name: 'Men', description: 'Men\'s luxury collection' },
-  { id: '2', name: 'Women', description: 'Women\'s luxury collection' },
-  { id: '3', name: 'Accessories', description: 'Luxury accessories' },
-];
+import dbConnect from '@/app/lib/mongodb';
+import Category from '@/app/models/Category';
+import { Types } from 'mongoose';
 
 export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const body = await request.json();
-    const categoryIndex = categories.findIndex(c => c.id === params.id);
+    await dbConnect();
 
-    if (categoryIndex === -1) {
+    const body = await request.json();
+    const { name, description, isActive } = body;
+
+    // Validate MongoDB ID
+    if (!Types.ObjectId.isValid(params.id)) {
+      return NextResponse.json(
+        { error: 'Invalid category ID' },
+        { status: 400 }
+      );
+    }
+
+    const updateData: any = {};
+    if (name) updateData.name = name;
+    if (description !== undefined) updateData.description = description;
+    if (isActive !== undefined) updateData.isActive = isActive;
+
+    const category = await Category.findByIdAndUpdate(
+      params.id,
+      updateData,
+      { new: true, runValidators: true }
+    ).select('-__v').lean();
+
+    if (!category) {
       return NextResponse.json(
         { error: 'Category not found' },
         { status: 404 }
       );
     }
 
-    categories[categoryIndex] = {
-      ...categories[categoryIndex],
-      ...body,
-    };
-
-    return NextResponse.json(categories[categoryIndex]);
-  } catch (error) {
+    return NextResponse.json(category);
+  } catch (error: any) {
+    console.error('Error updating category:', error);
     return NextResponse.json(
-      { error: 'Failed to update category' },
+      { error: error.message || 'Failed to update category' },
       { status: 500 }
     );
   }
@@ -41,19 +54,31 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const categoryIndex = categories.findIndex(c => c.id === params.id);
+    await dbConnect();
 
-    if (categoryIndex === -1) {
+    // Validate MongoDB ID
+    if (!Types.ObjectId.isValid(params.id)) {
+      return NextResponse.json(
+        { error: 'Invalid category ID' },
+        { status: 400 }
+      );
+    }
+
+    const category = await Category.findByIdAndDelete(params.id);
+
+    if (!category) {
       return NextResponse.json(
         { error: 'Category not found' },
         { status: 404 }
       );
     }
 
-    const deletedCategory = categories.splice(categoryIndex, 1);
-
-    return NextResponse.json(deletedCategory[0]);
+    return NextResponse.json({
+      message: 'Category deleted successfully',
+      deletedCategory: category,
+    });
   } catch (error) {
+    console.error('Error deleting category:', error);
     return NextResponse.json(
       { error: 'Failed to delete category' },
       { status: 500 }

@@ -53,30 +53,24 @@ export default function AddProductPage() {
     setIsSubmitting(true);
 
     try {
-      // Upload images to Cloudinary
-      const uploadedUrls: string[] = [];
+      // Upload images to server API (which then uploads to Cloudinary)
+      const uploadFormData = new FormData();
       for (const file of files) {
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('upload_preset', process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || '');
-
-        // const response = await fetch(
-        //   `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
-        //   {
-        //     method: 'POST',
-        //     body: formData,
-        //   }
-        // );
-
-        const response = await cloudinary.uploader.upload(file.toString(), {
-          upload_preset: process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || '',
-        });
-
-        if (!response.ok) throw new Error('Image upload failed');
-
-        const data = await response.json();
-        uploadedUrls.push(data.secure_url);
+        uploadFormData.append('files', file);
       }
+
+      const uploadResponse = await fetch('/api/upload', {
+        method: 'POST',
+        body: uploadFormData,
+      });
+
+      if (!uploadResponse.ok) {
+        const errorData = await uploadResponse.json();
+        throw new Error(errorData.error || 'Image upload failed');
+      }
+
+      const uploadData = await uploadResponse.json();
+      const uploadedUrls = uploadData.images;
 
       // Save product to database
       const response = await fetch('/api/dashboard/products', {
@@ -90,7 +84,10 @@ export default function AddProductPage() {
         }),
       });
 
-      if (!response.ok) throw new Error('Failed to create product');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create product');
+      }
 
       router.push('/dashboard');
       router.refresh();
@@ -164,15 +161,18 @@ export default function AddProductPage() {
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                 >
                   <option value="">Select a category</option>
-                  <option value="men">Men</option>
+                  {/* <option value="men">Men</option>
                   <option value="women">Women</option>
-                  <option value="accessories">Accessories</option>
+                  <option value="accessories">Accessories</option> */}
+                  {categories.map((cat) => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
                 </select>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-primary mb-2">
-                  Price ($) *
+                  Price (₦) *
                 </label>
                 <input
                   type="number"

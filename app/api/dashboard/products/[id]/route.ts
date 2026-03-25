@@ -1,24 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-// Mock database - in production, connect to MongoDB
-let products = [
-  {
-    id: '1',
-    name: 'Luxury Silk Blouse',
-    price: 299,
-    category: 'women',
-    description: 'Elegant silk blouse perfect for any occasion',
-    stock: 50,
-    images: ['/work/Merlin-Fashion-master/images/products-img/women/blouse1.jpg'],
-  },
-];
+import dbConnect from '@/app/lib/mongodb';
+import Product from '@/app/models/Product';
+import { Types } from 'mongoose';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const product = products.find(p => p.id === params.id);
+    await dbConnect();
+
+    const product = await Product.findById(params.id).select('-__v').lean();
 
     if (!product) {
       return NextResponse.json(
@@ -29,6 +21,7 @@ export async function GET(
 
     return NextResponse.json(product);
   } catch (error) {
+    console.error('Error fetching product:', error);
     return NextResponse.json(
       { error: 'Failed to fetch product' },
       { status: 500 }
@@ -41,25 +34,54 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    const body = await request.json();
-    const productIndex = products.findIndex(p => p.id === params.id);
+    await dbConnect();
 
-    if (productIndex === -1) {
+    const body = await request.json();
+    const {
+      name,
+      price,
+      category,
+      description,
+      stock,
+      images,
+      isActive,
+    } = body;
+
+    // Validate MongoDB ID
+    if (!Types.ObjectId.isValid(params.id)) {
+      return NextResponse.json(
+        { error: 'Invalid product ID' },
+        { status: 400 }
+      );
+    }
+
+    const updateData: any = {};
+    if (name) updateData.name = name;
+    if (price !== undefined) updateData.price = parseFloat(price);
+    if (category) updateData.category = category;
+    if (description) updateData.description = description;
+    if (stock !== undefined) updateData.stock = parseInt(stock);
+    if (images && images.length > 0) updateData.images = images;
+    if (isActive !== undefined) updateData.isActive = isActive;
+
+    const product = await Product.findByIdAndUpdate(
+      params.id,
+      updateData,
+      { new: true, runValidators: true }
+    ).select('-__v').lean();
+
+    if (!product) {
       return NextResponse.json(
         { error: 'Product not found' },
         { status: 404 }
       );
     }
 
-    products[productIndex] = {
-      ...products[productIndex],
-      ...body,
-    };
-
-    return NextResponse.json(products[productIndex]);
-  } catch (error) {
+    return NextResponse.json(product);
+  } catch (error: any) {
+    console.error('Error updating product:', error);
     return NextResponse.json(
-      { error: 'Failed to update product' },
+      { error: error.message || 'Failed to update product' },
       { status: 500 }
     );
   }
@@ -70,19 +92,31 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const productIndex = products.findIndex(p => p.id === params.id);
+    await dbConnect();
 
-    if (productIndex === -1) {
+    // Validate MongoDB ID
+    if (!Types.ObjectId.isValid(params.id)) {
+      return NextResponse.json(
+        { error: 'Invalid product ID' },
+        { status: 400 }
+      );
+    }
+
+    const product = await Product.findByIdAndDelete(params.id);
+
+    if (!product) {
       return NextResponse.json(
         { error: 'Product not found' },
         { status: 404 }
       );
     }
 
-    const deletedProduct = products.splice(productIndex, 1);
-
-    return NextResponse.json(deletedProduct[0]);
+    return NextResponse.json({
+      message: 'Product deleted successfully',
+      deletedProduct: product,
+    });
   } catch (error) {
+    console.error('Error deleting product:', error);
     return NextResponse.json(
       { error: 'Failed to delete product' },
       { status: 500 }

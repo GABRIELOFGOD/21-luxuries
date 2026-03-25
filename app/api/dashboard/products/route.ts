@@ -1,40 +1,58 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-// Mock database - in production, connect to MongoDB
-let products = [
-  {
-    id: '1',
-    name: 'Luxury Silk Blouse',
-    price: 299,
-    category: 'women',
-    description: 'Elegant silk blouse perfect for any occasion',
-    stock: 50,
-    images: ['/work/Merlin-Fashion-master/images/products-img/women/blouse1.jpg'],
-  },
-  {
-    id: '2',
-    name: 'Classic Tailored Suit',
-    price: 1299,
-    category: 'men',
-    description: 'Perfectly tailored suit for business and formal events',
-    stock: 30,
-    images: ['/work/Merlin-Fashion-master/images/products-img/men/suit1.jpg'],
-  },
-];
+import dbConnect from '@/app/lib/mongodb';
+import Product from '@/app/models/Product';
 
 export async function GET(request: NextRequest) {
   try {
+    await dbConnect();
+
     const { searchParams } = new URL(request.url);
     const category = searchParams.get('category');
+    const search = searchParams.get('search');
+    const sortBy = searchParams.get('sortBy') || 'createdAt';
+    const sortOrder = searchParams.get('sortOrder') || 'desc';
+    const limit = parseInt(searchParams.get('limit') || '30');
+    const page = parseInt(searchParams.get('page') || '1');
 
-    let filteredProducts = products;
+    // Build query
+    const query: any = {};
 
-    if (category) {
-      filteredProducts = products.filter(p => p.category === category);
+    if (category && category !== 'all') {
+      query.category = category;
     }
 
-    return NextResponse.json(filteredProducts);
+    if (search) {
+      query.$text = { $search: search };
+    }
+
+    // Build sort
+    const sort: any = {};
+    sort[sortBy] = sortOrder === 'desc' ? -1 : 1;
+
+    // Execute query with pagination
+    const skip = (page - 1) * limit;
+    const products = await Product.find(query)
+      .sort(sort)
+      .skip(skip)
+      .limit(limit)
+      .select('-__v')
+      .lean();
+
+    const total = await Product.countDocuments(query);
+
+    return NextResponse.json({
+      products,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit),
+        hasNext: page * limit < total,
+        hasPrev: page > 1,
+      },
+    });
   } catch (error) {
+    console.error('Error fetching products:', error);
     return NextResponse.json(
       { error: 'Failed to fetch products' },
       { status: 500 }
@@ -44,6 +62,8 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    await dbConnect();
+
     const body = await request.json();
     const {
       name,
@@ -61,22 +81,30 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const newProduct = {
-      id: Date.now().toString(),
+    if (!images || images.length === 0) {
+      return NextResponse.json(
+        { error: 'At least one image is required' },
+        { status: 400 }
+      );
+    }
+
+    const newProduct = new Product({
       name,
       price: parseFloat(price),
       category,
       description,
       stock: parseInt(stock) || 0,
-      images: images || [],
-    };
+      images: Array.isArray(images) ? images : [images],
+      isActive: true,
+    });
 
-    products.push(newProduct);
+    await newProduct.save();
 
     return NextResponse.json(newProduct, { status: 201 });
-  } catch (error) {
+  } catch (error: any) {
+    console.error('Error creating product:', error);
     return NextResponse.json(
-      { error: 'Failed to create product' },
+      { error: error.message || 'Failed to create product' },
       { status: 500 }
     );
   }

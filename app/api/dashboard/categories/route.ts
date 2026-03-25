@@ -1,16 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-// Mock database - in production, connect to MongoDB
-let categories = [
-  { id: '1', name: 'Men', description: 'Men\'s luxury collection' },
-  { id: '2', name: 'Women', description: 'Women\'s luxury collection' },
-  { id: '3', name: 'Accessories', description: 'Luxury accessories' },
-];
+import dbConnect from '@/app/lib/mongodb';
+import Category from '@/app/models/Category';
 
 export async function GET(request: NextRequest) {
   try {
-    return NextResponse.json(categories);
+    await dbConnect();
+
+    const categories = await Category.find({ isActive: true })
+      .sort({ createdAt: -1 })
+      .select('-__v')
+      .lean();
+
+    return NextResponse.json(categories || []);
   } catch (error) {
+    console.error('Error fetching categories:', error);
     return NextResponse.json(
       { error: 'Failed to fetch categories' },
       { status: 500 }
@@ -20,6 +23,8 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    await dbConnect();
+
     const body = await request.json();
     const { name, description } = body;
 
@@ -30,18 +35,28 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const newCategory = {
-      id: Date.now().toString(),
-      name,
-      description: description || '',
-    };
+    // Check if category already exists
+    const existing = await Category.findOne({ name: name.trim() });
+    if (existing) {
+      return NextResponse.json(
+        { error: 'Category already exists' },
+        { status: 400 }
+      );
+    }
 
-    categories.push(newCategory);
+    const newCategory = new Category({
+      name: name.trim(),
+      description: description || '',
+      isActive: true,
+    });
+
+    await newCategory.save();
 
     return NextResponse.json(newCategory, { status: 201 });
-  } catch (error) {
+  } catch (error: any) {
+    console.error('Error creating category:', error);
     return NextResponse.json(
-      { error: 'Failed to create category' },
+      { error: error.message || 'Failed to create category' },
       { status: 500 }
     );
   }

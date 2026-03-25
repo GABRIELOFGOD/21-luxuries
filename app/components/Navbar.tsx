@@ -47,14 +47,14 @@ export default function Navbar() {
             Products
           </Link>
         </li>
-        <li className="opacity-0 md:opacity-100">
+        {/* <li className="opacity-0 md:opacity-100">
           <Link
             href="/categories"
             className="text-foreground hover:text-primary no-underline block py-4 px-6 transition-colors"
           >
             Categories
           </Link>
-        </li>
+        </li> */}
         <li className="opacity-0 md:opacity-100">
           <Link
             href="/contact"
@@ -63,7 +63,7 @@ export default function Navbar() {
             ContactUs
           </Link>
         </li>
-        <li className="opacity-0 md:opacity-100">
+        {/* <li className="opacity-0 md:opacity-100">
           <Link
             href="/dashboard"
             className="text-foreground hover:text-primary no-underline block py-4 px-6 transition-colors"
@@ -79,7 +79,7 @@ export default function Navbar() {
           >
             Login
           </Link>
-        </li>
+        </li> */}
       </ul>
 
       <div className="burger md:hidden cursor-pointer" onClick={toggleMenu}>

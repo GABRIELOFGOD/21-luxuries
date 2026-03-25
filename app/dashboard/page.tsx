@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import EmptyState from '@/app/components/EmptyState';
+import PageLoader from '@/app/components/PageLoader';
 // import CategoryModal from '../components/CategoryModal';
 
 interface Product {
@@ -59,15 +61,7 @@ export default function DashboardPage() {
   );
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-          className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full"
-        />
-      </div>
-    );
+    return <PageLoader fullHeight={false} />;
   }
 
   return (
@@ -147,7 +141,7 @@ export default function DashboardPage() {
                         {product.category}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-sm font-semibold text-primary">${product.price}</td>
+                    <td className="px-6 py-4 text-sm font-semibold text-primary">₦{product.price}</td>
                     <td className="px-6 py-4 text-sm text-gray-600">{product.stock || 0}</td>
                     <td className="px-6 py-4 text-sm space-x-2">
                       <Link href={`/dashboard/edit/${product._id}`}>
@@ -168,14 +162,15 @@ export default function DashboardPage() {
             </table>
           </div>
         ) : (
-          <div className="p-12 text-center">
-            <p className="text-xl text-gray-500 mb-4">No products found</p>
-            <Link href="/dashboard/add">
-              <button className="bg-primary hover:bg-opacity-90 text-background px-6 py-3 rounded-lg font-semibold transition-colors">
-                Create Your First Product
-              </button>
-            </Link>
-          </div>
+          <EmptyState
+            title="No Products Yet"
+            description="Start building your product catalog by creating your first luxury item."
+            icon="📦"
+            action={{
+              label: 'Create Your First Product',
+              href: '/dashboard/add',
+            }}
+          />
         )}
       </motion.div>
 

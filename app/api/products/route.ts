@@ -1,55 +1,72 @@
-import { NextRequest, NextResponse } from "next/server";
-import { products, Product, updateProducts } from "../../lib/store";
+import { NextRequest, NextResponse } from 'next/server';
+import dbConnect from '@/app/lib/mongodb';
+import Product from '@/app/models/Product';
 
-// GET /api/products - Get all products
+// GET /api/products - Get all products for users
 export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const category = searchParams.get("category");
-  const type = searchParams.get("type");
-  const limit = searchParams.get("limit");
-  const offset = searchParams.get("offset");
-
-  let filteredProducts = products;
-
-  if (category) {
-    filteredProducts = filteredProducts.filter((p) => p.category === category);
-  }
-
-  if (type) {
-    filteredProducts = filteredProducts.filter((p) => p.type === type);
-  }
-
-  if (offset) {
-    const offsetNum = parseInt(offset);
-    filteredProducts = filteredProducts.slice(offsetNum);
-  }
-
-  if (limit) {
-    const limitNum = parseInt(limit);
-    filteredProducts = filteredProducts.slice(0, limitNum);
-  }
-
-  return NextResponse.json(filteredProducts);
-}
-
-// POST /api/products - Create a new product
-export async function POST(request: NextRequest) {
   try {
-    const body: Omit<Product, "id"> = await request.json();
+    await dbConnect();
 
-    const newProduct: Product = {
-      ...body,
-      id: `product_${Date.now()}`,
-    };
+    const { searchParams } = new URL(request.url);
+    const category = searchParams.get('category');
+    const search = searchParams.get('search');
+    const sortBy = searchParams.get('sortBy') || 'createdAt';
+    const sortOrder = searchParams.get('sortOrder') || 'desc';
+    const limit = parseInt(searchParams.get('limit') || '30');
+    const page = parseInt(searchParams.get('page') || '1');
 
-    // Update the products array
-    updateProducts([...products, newProduct]);
+    // Build query - only active products for users
+    const query: any = { isActive: true };
 
-    return NextResponse.json(newProduct, { status: 201 });
+    if (category && category !== 'all') {
+      query.category = category;
+    }
+
+    if (search) {
+      query.$text = { $search: search };
+    }
+
+    const minPrice = parseFloat(searchParams.get('minPrice') || '0');
+    const maxPrice = parseFloat(searchParams.get('maxPrice') || '0');
+    if (!isNaN(minPrice) && minPrice > 0 && !isNaN(maxPrice) && maxPrice > 0) {
+      query.price = { $gte: minPrice, $lte: maxPrice };
+    } else if (!isNaN(minPrice) && minPrice > 0) {
+      query.price = { $gte: minPrice };
+    } else if (!isNaN(maxPrice) && maxPrice > 0) {
+      query.price = { $lte: maxPrice };
+    }
+
+    // Build sort
+    const sort: any = {};
+    sort[sortBy] = sortOrder === 'desc' ? -1 : 1;
+
+    // Execute query with pagination
+    const skip = (page - 1) * limit;
+    const products = await Product.find(query)
+      .sort(sort)
+      .skip(skip)
+      .limit(limit)
+      .select('-__v')
+      .lean();
+
+    const total = await Product.countDocuments(query);
+
+    return NextResponse.json({
+      products,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit),
+        hasNext: page * limit < total,
+        hasPrev: page > 1,
+      },
+    });
   } catch (error) {
+    console.error('Error fetching products:', error);
     return NextResponse.json(
-      { error: "Invalid request body" },
-      { status: 400 },
+      { error: 'Failed to fetch products' },
+      { status: 500 }
     );
   }
 }

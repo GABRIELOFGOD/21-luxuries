@@ -21,7 +21,7 @@ export default function EditProductPage() {
 
   const [formData, setFormData] = useState<ProductFormData>({
     name: '',
-    price: '',
+    price: '',  
     category: '',
     description: '',
     stock: '',
@@ -90,26 +90,25 @@ export default function EditProductPage() {
     try {
       let allImages = [...existingImages];
 
-      // Upload new images to Cloudinary if any
+      // Upload new images to server API if any
       if (files.length) {
+        const uploadFormData = new FormData();
         for (const file of files) {
-          const formDataUpload = new FormData();
-          formDataUpload.append('file', file);
-          formDataUpload.append('upload_preset', process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || '');
-
-          const response = await fetch(
-            `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
-            {
-              method: 'POST',
-              body: formDataUpload,
-            }
-          );
-
-          if (!response.ok) throw new Error('Image upload failed');
-
-          const data = await response.json();
-          allImages.push(data.secure_url);
+          uploadFormData.append('files', file);
         }
+
+        const response = await fetch('/api/upload', {
+          method: 'POST',
+          body: uploadFormData,
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Image upload failed');
+        }
+
+        const uploadData = await response.json();
+        allImages = [...allImages, ...uploadData.images];
       }
 
       // Update product in database
@@ -124,7 +123,10 @@ export default function EditProductPage() {
         }),
       });
 
-      if (!response.ok) throw new Error('Failed to update product');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update product');
+      }
 
       router.push('/dashboard');
       router.refresh();
@@ -200,7 +202,7 @@ export default function EditProductPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Price ($) *
+                Price (₦) *
               </label>
               <input
                 type="number"

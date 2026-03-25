@@ -1,7 +1,12 @@
+"use client";
+
+import { useCategory } from "@/hooks/use-category";
 import Image from "next/image";
 import Link from "next/link";
 
 export default function Categories() {
+  const { categories } = useCategory();
+  
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
