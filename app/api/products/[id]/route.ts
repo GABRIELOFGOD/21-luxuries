@@ -3,18 +3,19 @@ import dbConnect from '@/app/lib/mongodb';
 import Product from '@/app/models/Product';
 
 interface RouteParams {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 // GET /api/products/[id] - Get a single product
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
+    const { id } = await params;
     await dbConnect();
 
     const product = await Product.findOne({
-      _id: params.id,
+      _id: id,
       isActive: true,
     }).select('-__v').lean();
 

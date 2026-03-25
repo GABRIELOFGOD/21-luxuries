@@ -5,12 +5,13 @@ import { Types } from 'mongoose';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     await dbConnect();
 
-    const product = await Product.findById(params.id).select('-__v').lean();
+    const product = await Product.findById(id).select('-__v').lean();
 
     if (!product) {
       return NextResponse.json(
@@ -31,9 +32,10 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     await dbConnect();
 
     const body = await request.json();
@@ -48,7 +50,7 @@ export async function PUT(
     } = body;
 
     // Validate MongoDB ID
-    if (!Types.ObjectId.isValid(params.id)) {
+    if (!Types.ObjectId.isValid(id)) {
       return NextResponse.json(
         { error: 'Invalid product ID' },
         { status: 400 }
@@ -65,7 +67,7 @@ export async function PUT(
     if (isActive !== undefined) updateData.isActive = isActive;
 
     const product = await Product.findByIdAndUpdate(
-      params.id,
+      id,
       updateData,
       { new: true, runValidators: true }
     ).select('-__v').lean();
@@ -89,20 +91,21 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     await dbConnect();
 
     // Validate MongoDB ID
-    if (!Types.ObjectId.isValid(params.id)) {
+    if (!Types.ObjectId.isValid(id)) {
       return NextResponse.json(
         { error: 'Invalid product ID' },
         { status: 400 }
       );
     }
 
-    const product = await Product.findByIdAndDelete(params.id);
+    const product = await Product.findByIdAndDelete(id);
 
     if (!product) {
       return NextResponse.json(
