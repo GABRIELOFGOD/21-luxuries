@@ -1,10 +1,10 @@
 'use client';
 
-import { ChangeEvent, useState } from 'react';
+import { ChangeEvent, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import CloudinaryUpload from '../components/CloudinaryUpload';
-import cloudinary from '@/app/lib/cloudinary';
+// import cloudinary from '@/app/lib/cloudinary';
 
 interface ProductFormData {
   name: string;
@@ -28,13 +28,20 @@ export default function AddProductPage() {
   const [error, setError] = useState('');
   const [categories, setCategories] = useState<string[]>([]);
 
-  useState(() => {
-    // Fetch categories
-    fetch('/api/dashboard/categories')
-      .then(res => res.json())
-      .then(data => setCategories(data.map((cat: any) => cat.name)))
-      .catch(err => console.error('Error fetching categories:', err));
-  });
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const response = await fetch('/api/dashboard/categories');
+        if (!response.ok) throw new Error('Failed to fetch categories');
+        const data = await response.json();
+        setCategories(data.map((cat: any) => cat.name || ''));
+      } catch (err) {
+        console.error('Error fetching categories:', err);
+      }
+    };
+
+    loadCategories();
+  }, []);
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -165,7 +172,7 @@ export default function AddProductPage() {
                   <option value="women">Women</option>
                   <option value="accessories">Accessories</option> */}
                   {categories.map((cat) => (
-                    <option key={cat} value={cat}>{cat}</option>
+                    <option key={cat} value={cat.toLowerCase()}>{cat}</option>
                   ))}
                 </select>
               </div>

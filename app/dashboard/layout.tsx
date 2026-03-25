@@ -86,7 +86,7 @@ export default function DashboardLayout({
           </button>
           <div className="flex items-center space-x-4">
             <img
-              src="/images/brand/21-luxuries logo.jpg"
+              src="/images/brand/21luxury-logo.jpg"
               alt="Logo"
               className="w-10 h-10 rounded-full"
             />

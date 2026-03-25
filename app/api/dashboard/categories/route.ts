@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
     await dbConnect();
 
     const body = await request.json();
-    const { name, description } = body;
+    const { name, description, image } = body;
 
     if (!name) {
       return NextResponse.json(
@@ -47,6 +47,7 @@ export async function POST(request: NextRequest) {
     const newCategory = new Category({
       name: name.trim(),
       description: description || '',
+      image: image || '/images/brand/default-category.png',
       isActive: true,
     });
 

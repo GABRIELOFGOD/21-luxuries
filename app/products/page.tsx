@@ -7,18 +7,19 @@ import EmptyState from '@/app/components/EmptyState';
 import PageLoader from '@/app/components/PageLoader';
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { IProduct } from "../models/Product";
 
-interface Product {
-  _id: string;
-  name: string;
-  price: number;
-  images: string[];
-  category: string;
-  description: string;
-}
+// interface Product {
+//   _id: string;
+//   name: string;
+//   price: number;
+//   images: string[];
+//   category: string;
+//   description: string;
+// }
 
 export default function Products() {
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<IProduct[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingCategories, setLoadingCategories] = useState(true);
@@ -102,12 +103,11 @@ export default function Products() {
         params.set('maxPrice', maxPrice);
       }
 
-      const url = `/api/products?${params.toString()}`;
+      const url = `/api/products?${params.toString().toLowerCase()}`;
       const response = await fetch(url);
       if (!response.ok) throw new Error('Failed to fetch products');
 
       const data = await response.json();
-      console.log("Product data", data);
       setProducts(data.products || []);
       if (data.pagination) {
         setPagination(data.pagination);
@@ -225,7 +225,7 @@ export default function Products() {
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
               {products.map((product, index) => (
-                <motion.div key={product._id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: index * 0.06 }} className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
+                <motion.div key={product._id?.toString()} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: index * 0.06 }} className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
                   <Link href={`/products/${product._id}`} className="block">
                     <div className="relative h-52 overflow-hidden">
                       <Image src={product.images?.[0] || '/placeholder.jpg'} alt={product.name} fill className="object-cover hover:scale-105 transition-transform duration-300" />

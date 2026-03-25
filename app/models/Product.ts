@@ -29,7 +29,7 @@ const ProductSchema = new mongoose.Schema<IProduct>(
     category: {
       type: String,
       required: [true, 'Product category is required'],
-      enum: ['men', 'women', 'accessories'],
+      trim: true,
     },
     description: {
       type: String,

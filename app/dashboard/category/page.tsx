@@ -2,17 +2,20 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { ICategory } from '@/app/models/Category';
 
-interface Category {
-  id: string;
-  name: string;
-  description?: string;
-}
+// interface Category {
+//   id: string;
+//   name: string;
+//   description?: string;
+// }
 
 export default function CategoryPage() {
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [categories, setCategories] = useState<ICategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({ name: '', description: '' });
+  const [categoryImageFile, setCategoryImageFile] = useState<File | null>(null);
+  const [categoryImagePreview, setCategoryImagePreview] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -35,6 +38,25 @@ export default function CategoryPage() {
     }
   };
 
+  const uploadCategoryImage = async (): Promise<string | undefined> => {
+    if (!categoryImageFile) return undefined;
+
+    const formDataUpload = new FormData();
+    formDataUpload.append('files', categoryImageFile);
+
+    const response = await fetch('/api/upload', {
+      method: 'POST',
+      body: formDataUpload,
+    });
+
+    if (!response.ok) {
+      throw new Error('Category image upload failed');
+    }
+
+    const result = await response.json();
+    return Array.isArray(result.urls) ? result.urls[0] : undefined;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -46,15 +68,19 @@ export default function CategoryPage() {
         ? `/api/dashboard/categories/${editingId}`
         : '/api/dashboard/categories';
 
+      const imageUrl = await uploadCategoryImage();
+      const payload = { ...formData, ...(imageUrl ? { image: imageUrl } : {}) };
+
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
-
       if (!response.ok) throw new Error('Failed to save category');
 
       setFormData({ name: '', description: '' });
+      setCategoryImageFile(null);
+      setCategoryImagePreview('');
       setEditingId(null);
       await fetchCategories();
     } catch (err) {
@@ -64,9 +90,11 @@ export default function CategoryPage() {
     }
   };
 
-  const handleEdit = (category: Category) => {
+  const handleEdit = (category: ICategory) => {
     setFormData({ name: category.name, description: category.description || '' });
-    setEditingId(category.id);
+    setCategoryImagePreview(category.image || '');
+    setCategoryImageFile(null);
+    setEditingId(category._id.toString());
   };
 
   const handleDelete = async (id: string) => {
@@ -163,6 +191,27 @@ export default function CategoryPage() {
               />
             </div>
 
+            <div>
+              <label className="block text-sm font-medium text-primary mb-2">
+                Category Image
+              </label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                  const file = e.target.files?.[0] || null;
+                  setCategoryImageFile(file);
+                  setCategoryImagePreview(file ? URL.createObjectURL(file) : '');
+                }}
+                className="w-full text-sm text-gray-500 file:border-0 file:bg-primary file:text-background file:px-4 file:py-2 file:rounded-lg"
+              />
+              {categoryImagePreview && (
+                <div className="mt-3 w-full max-w-45 h-30 rounded-lg overflow-hidden border border-gray-200">
+                  <img src={categoryImagePreview} alt="Category Preview" className="w-full h-full object-cover" />
+                </div>
+              )}
+            </div>
+
             <div className="flex gap-4">
               <button
                 type="submit"
@@ -197,7 +246,7 @@ export default function CategoryPage() {
             <div className="space-y-4">
               {categories.map((category, index) => (
                 <motion.div
-                  key={category.id}
+                  key={category._id.toString()}
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.05 }}
@@ -213,13 +262,18 @@ export default function CategoryPage() {
                         Edit
                       </button>
                       <button
-                        onClick={() => handleDelete(category.id)}
+                        onClick={() => handleDelete(category._id.toString())}
                         className="text-red-600 hover:text-red-800 font-semibold transition-colors"
                       >
                         Delete
                       </button>
                     </div>
                   </div>
+                  {category.image && (
+                    <div className="w-full h-40 rounded-lg overflow-hidden mb-2">
+                      <img src={category.image} alt={category.name} className="w-full h-full object-cover" />
+                    </div>
+                  )}
                   {category.description && (
                     <p className="text-gray-600 text-sm">{category.description}</p>
                   )}

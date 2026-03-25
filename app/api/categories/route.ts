@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
 
     const categories = await Category.find({ isActive: true })
       .sort({ name: 1 })
-      .select('name')
+      .select('name description image')
       .lean();
 
     return NextResponse.json(categories || []);

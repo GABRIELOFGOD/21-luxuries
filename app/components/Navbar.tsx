@@ -16,7 +16,7 @@ export default function Navbar() {
       <div className="logo">
         <Link href="/" className="flex items-center space-x-2">
           <Image
-            src="/images/brand/21-luxuries logo.jpg"
+            src="/images/brand/21luxury-logo.jpg"
             alt="21 Luxuries Logo"
             width={50}
             height={50}
@@ -47,14 +47,14 @@ export default function Navbar() {
             Products
           </Link>
         </li>
-        {/* <li className="opacity-0 md:opacity-100">
+        <li className="opacity-0 md:opacity-100">
           <Link
             href="/categories"
             className="text-foreground hover:text-primary no-underline block py-4 px-6 transition-colors"
           >
             Categories
           </Link>
-        </li> */}
+        </li>
         <li className="opacity-0 md:opacity-100">
           <Link
             href="/contact"

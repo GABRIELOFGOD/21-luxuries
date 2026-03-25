@@ -1,12 +1,47 @@
 "use client";
 
-import { useCategory } from "@/hooks/use-category";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import EmptyState from '@/app/components/EmptyState';
+import PageLoader from '@/app/components/PageLoader';
+
+interface CategoryDto {
+  _id: string;
+  name: string;
+  description?: string;
+  image?: string;
+}
 
 export default function Categories() {
-  const { categories } = useCategory();
-  
+  const [categories, setCategories] = useState<CategoryDto[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const response = await fetch('/api/categories');
+        if (!response.ok) throw new Error('Unable to load categories');
+        const data = await response.json();
+        setCategories(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to fetch categories');
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, []);
+
+  if (loading) return <PageLoader />;
+
+  if (error) return (
+    <div className="min-h-screen bg-background flex items-center justify-center p-6">
+      <p className="text-red-600 font-semibold">{error}</p>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -20,61 +55,35 @@ export default function Categories() {
       </div>
 
       {/* Categories Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 px-6 md:px-12 mb-16">
-        {/* Men's Category */}
-        <div className="group cursor-pointer">
-          <Link href="/products?category=men">
-            <div className="relative overflow-hidden rounded-lg shadow-lg">
-              <Image
-                src="/work/Merlin-Fashion-master/images/categories-img/men.jpg"
-                alt="Men's Fashion"
-                width={400}
-                height={500}
-                className="w-full h-80 object-cover transition-transform duration-300 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <h2 className="text-white text-2xl font-bold">MEN'S</h2>
-              </div>
-            </div>
-          </Link>
+      {categories.length === 0 ? (
+        <EmptyState
+          title="No categories yet"
+          description="Create categories in dashboard and they will show up here with images."
+          icon="📦"
+        />
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 px-6 md:px-12 mb-16">
+          {categories.map((category) => (
+            <Link key={category._id} href={`/products?category=${encodeURIComponent(category.name.toLowerCase())}`} className="group block">
+              <article className="relative overflow-hidden rounded-xl shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+                <div className="relative h-80 w-full">
+                  <Image
+                    src={category.image || '/images/brand/default-category.png'}
+                    alt={category.name}
+                    fill
+                    className="object-cover transition-transform duration-300 group-hover:scale-105"
+                  />
+                </div>
+                <div className="absolute inset-0 bg-black bg-opacity-30" />
+                <div className="absolute bottom-0 left-0 right-0 p-6 bg-linear-to-t from-black/70 via-black/30 to-transparent">
+                  <h2 className="text-2xl font-bold text-white">{category.name}</h2>
+                  <p className="mt-1 text-sm text-white/90 line-clamp-2">{category.description || 'Explore premium items in this category.'}</p>
+                </div>
+              </article>
+            </Link>
+          ))}
         </div>
-
-        {/* Women's Category */}
-        <div className="group cursor-pointer">
-          <Link href="/products?category=women">
-            <div className="relative overflow-hidden rounded-lg shadow-lg">
-              <Image
-                src="/work/Merlin-Fashion-master/images/categories-img/women.jpg"
-                alt="Women's Fashion"
-                width={400}
-                height={500}
-                className="w-full h-80 object-cover transition-transform duration-300 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <h2 className="text-white text-2xl font-bold">WOMEN'S</h2>
-              </div>
-            </div>
-          </Link>
-        </div>
-
-        {/* Accessories Category */}
-        <div className="group cursor-pointer md:col-span-2 lg:col-span-1">
-          <Link href="/products?category=accessories">
-            <div className="relative overflow-hidden rounded-lg shadow-lg">
-              <Image
-                src="/work/Merlin-Fashion-master/images/categories-img/accessories.jpg"
-                alt="Accessories"
-                width={400}
-                height={500}
-                className="w-full h-80 object-cover transition-transform duration-300 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <h2 className="text-white text-2xl font-bold">ACCESSORIES</h2>
-              </div>
-            </div>
-          </Link>
-        </div>
-      </div>
+      )}
 
       {/* Featured Collections */}
       <div className="bg-primary py-16">

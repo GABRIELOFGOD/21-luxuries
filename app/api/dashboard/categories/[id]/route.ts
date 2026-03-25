@@ -12,7 +12,7 @@ export async function PUT(
     await dbConnect();
 
     const body = await request.json();
-    const { name, description, isActive } = body;
+    const { name, description, image, isActive } = body;
 
     // Validate MongoDB ID
     if (!Types.ObjectId.isValid(id)) {
@@ -25,6 +25,7 @@ export async function PUT(
     const updateData: any = {};
     if (name) updateData.name = name;
     if (description !== undefined) updateData.description = description;
+    if (image !== undefined) updateData.image = image;
     if (isActive !== undefined) updateData.isActive = isActive;
 
     const category = await Category.findByIdAndUpdate(

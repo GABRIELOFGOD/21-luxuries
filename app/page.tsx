@@ -5,15 +5,17 @@ export default function Home() {
   return (
     <div>
       {/* Main Image */}
-      <div className="flex justify-center pt-20 md:pt-10">
+      <div className="flex justify-center pt-20 md:pt-10 w-full h-150 px-3 overflow-hidden relative">
         <Link href="/">
           <Image
             id="main-index-img"
-            src="/work/Merlin-Fashion-master/images/index-img/Off-the-Wall.jpg"
+            src="/images/use/images/index-img/Off-the-Wall.jpg"
+            // src="/images/use/Banner.jpg"
             alt="Main fashion image"
-            width={800}
-            height={600}
-            className="w-full max-w-4xl"
+            // width={800}
+            // height={600}
+            fill
+            className="w-full object-fill h-full"
             priority
           />
         </Link>
@@ -25,7 +27,7 @@ export default function Home() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-5 mx-6 md:mx-12 mt-2.5 mb-2.5">
         <Link href="/categories">
           <Image
-            src="/work/Merlin-Fashion-master/images/index-img/1.png"
+            src="/images/use/images/index-img/1.png"
             alt="Offer 1"
             width={300}
             height={200}
@@ -33,7 +35,7 @@ export default function Home() {
         </Link>
         <Link href="/categories">
           <Image
-            src="/work/Merlin-Fashion-master/images/index-img/2.png"
+            src="/images/use/images/index-img/2.png"
             alt="Offer 2"
             width={300}
             height={200}
@@ -41,7 +43,7 @@ export default function Home() {
         </Link>
         <Link href="/categories">
           <Image
-            src="/work/Merlin-Fashion-master/images/index-img/3.png"
+            src="/images/use/images/index-img/3.png"
             alt="Offer 3"
             width={300}
             height={200}
@@ -49,7 +51,7 @@ export default function Home() {
         </Link>
         <Link href="/categories">
           <Image
-            src="/work/Merlin-Fashion-master/images/index-img/4.png"
+            src="/images/use/images/index-img/4.png"
             alt="Offer 4"
             width={300}
             height={200}
@@ -64,7 +66,7 @@ export default function Home() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mx-5 md:mx-5">
         <Link href="/categories">
           <Image
-            src="/work/Merlin-Fashion-master/images/index-img/anton-levin-P8prss71psk-unsplash.jpg"
+            src="/images/use/images/index-img/anton-levin-P8prss71psk-unsplash.jpg"
             alt="Fashion 1"
             width={400}
             height={300}
@@ -72,7 +74,7 @@ export default function Home() {
         </Link>
         <Link href="/categories">
           <Image
-            src="/work/Merlin-Fashion-master/images/index-img/bogdan-glisik-2WgOPYJuPsU-unsplash (1).jpg"
+            src="/images/use/images/index-img/bogdan-glisik-2WgOPYJuPsU-unsplash (1).jpg"
             alt="Fashion 2"
             width={400}
             height={300}
@@ -80,7 +82,7 @@ export default function Home() {
         </Link>
         <Link href="/categories">
           <Image
-            src="/work/Merlin-Fashion-master/images/index-img/calvin-lupiya--yPg8cusGD8-unsplash.jpg"
+            src="/images/use/images/index-img/calvin-lupiya--yPg8cusGD8-unsplash.jpg"
             alt="Fashion 3"
             width={400}
             height={300}
@@ -115,7 +117,7 @@ export default function Home() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mx-5 md:mx-5">
         <Link href="/products">
           <Image
-            src="/work/Merlin-Fashion-master/images/index-img/ethan-haddox-QHGcADeeT00-unsplash.jpg"
+            src="/images/use/images/index-img/ethan-haddox-QHGcADeeT00-unsplash.jpg"
             alt="Trending 1"
             width={400}
             height={400}
@@ -124,7 +126,7 @@ export default function Home() {
         </Link>
         <Link href="/products">
           <Image
-            src="/work/Merlin-Fashion-master/images/index-img/andres-jasso-PqbL_mxmaUE-unsplash (1).jpg"
+            src="/images/use/images/index-img/andres-jasso-PqbL_mxmaUE-unsplash (1).jpg"
             alt="Trending 2"
             width={400}
             height={400}
@@ -132,7 +134,7 @@ export default function Home() {
         </Link>
         <Link href="/products">
           <Image
-            src="/work/Merlin-Fashion-master/images/index-img/raul-hender-afc4HxPy2GM-unsplash (1).jpg"
+            src="/images/use/images/index-img/raul-hender-afc4HxPy2GM-unsplash (1).jpg"
             alt="Trending 3"
             width={400}
             height={400}
@@ -140,7 +142,7 @@ export default function Home() {
         </Link>
         <Link href="/products">
           <Image
-            src="/work/Merlin-Fashion-master/images/index-img/nike.png"
+            src="/images/use/images/index-img/nike.png"
             alt="Nike"
             width={400}
             height={200}
@@ -148,7 +150,7 @@ export default function Home() {
         </Link>
         <Link href="/products">
           <Image
-            src="/work/Merlin-Fashion-master/images/index-img/my-shoes2.png"
+            src="/images/use/images/index-img/my-shoes2.png"
             alt="Shoes 2"
             width={400}
             height={200}
@@ -156,7 +158,7 @@ export default function Home() {
         </Link>
         <Link href="/products">
           <Image
-            src="/work/Merlin-Fashion-master/images/index-img/my-shoes3.png"
+            src="/images/use/images/index-img/my-shoes3.png"
             alt="Shoes 3"
             width={400}
             height={200}
@@ -178,7 +180,7 @@ export default function Home() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-5 mx-5 md:mx-5 mb-16">
         <Link href="/products">
           <Image
-            src="/work/Merlin-Fashion-master/images/index-img/girl1.png"
+            src="/images/use/images/index-img/girl1.png"
             alt="Style 1"
             width={300}
             height={400}
@@ -186,7 +188,7 @@ export default function Home() {
         </Link>
         <Link href="/products">
           <Image
-            src="/work/Merlin-Fashion-master/images/index-img/girl2.png"
+            src="/images/use/images/index-img/girl2.png"
             alt="Style 2"
             width={300}
             height={400}
@@ -194,7 +196,7 @@ export default function Home() {
         </Link>
         <Link href="/products">
           <Image
-            src="/work/Merlin-Fashion-master/images/index-img/girl3.png"
+            src="/images/use/images/index-img/girl3.png"
             alt="Style 3"
             width={300}
             height={400}
@@ -202,7 +204,7 @@ export default function Home() {
         </Link>
         <Link href="/products">
           <Image
-            src="/work/Merlin-Fashion-master/images/index-img/girl4.png"
+            src="/images/use/images/index-img/girl4.png"
             alt="Style 4"
             width={300}
             height={400}
